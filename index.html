@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Equiti EHR - Full Home Screen Demo</title>
+  <style>
+    /* Base Styles */
+    body {
+      margin: 0;
+      font-family: Tahoma, Geneva, sans-serif;
+      background-color: #c3d9ff; /* Light blue background reminiscent of XP */
+    }
+    /* Hidden SVG definitions container */
+    svg { display: none; }
+    
+    /* Top Bar */
+    #topbar {
+      background: linear-gradient(to bottom, #3a6ea5, #2e5191);
+      height: 50px;
+      line-height: 50px;
+      padding: 0 10px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 2px rgba(0,0,0,0.3);
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+    }
+    .topbar-left .title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-right: 20px;
+    }
+    .topbar-menu {
+      display: flex;
+    }
+    .menuItem {
+      margin-right: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      font-size: 16px;
+    }
+    .menuItem svg {
+      width: 20px;
+      height: 20px;
+      margin-right: 5px;
+    }
+    
+    /* Sidebar Navigation */
+    nav {
+      width: 200px;
+      background: #e7eff8;
+      height: calc(100vh - 50px);
+      float: left;
+      border-right: 1px solid #a3b9d3;
+      padding-top: 10px;
+    }
+    nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    nav li {
+      padding: 10px;
+      margin: 5px;
+      background: #f0f8ff;
+      border: 1px solid #a3b9d3;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    nav li:hover {
+      background: #dceafc;
+    }
+    nav li svg {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+    }
+    
+    /* Main Content Area as Two Columns */
+    .content {
+      display: flex;
+      gap: 20px;
+      padding: 10px;
+      margin-left: 210px;
+    }
+    .left-col {
+      flex: 1;
+    }
+    .right-col {
+      flex: 1;
+    }
+    
+    /* Widget styling */
+    .widget {
+      background: #fff;
+      border: 2px solid #a3b9d3;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    }
+    .widget header {
+      background: linear-gradient(to bottom, #e3f2fd, #b3d7ff);
+      padding: 8px;
+      border-bottom: 1px solid #a3b9d3;
+      font-weight: bold;
+    }
+    .widget .widget-content {
+      padding: 10px;
+      overflow: auto;
+      position: relative;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table th, table td {
+      padding: 6px;
+      border: 1px solid #ccc;
+      text-align: left;
+      font-size: 0.9em;
+    }
+    /* Patient image placeholder style */
+    .patient-img {
+      float: right;
+      width: 100px;
+      height: 100px;
+      border: 2px solid #a3b9d3;
+      border-radius: 5px;
+      object-fit: cover;
+    }
+    /* Additional Patient Information */
+    .patient-details p {
+      margin: 4px 0;
+    }
+    
+    /* Progress Notes styling */
+    .progress-note {
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 8px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+    }
+    .new-progress-note {
+      background-color: #fffacd;  /* Pale yellow for new notes */
+    }
+    /* New Note Entry Section */
+    .new-note-section {
+      margin-top: 15px;
+      padding: 10px;
+      border-top: 1px solid #ccc;
+    }
+    .new-note-section textarea {
+      width: 100%;
+      height: 80px;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .new-note-section button {
+      margin-top: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      background-color: #0078D7;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .new-note-section button:hover {
+      background-color: #005fa3;
+    }
+    
+    /* Additional Modules Styling (Allergies, Vitals, Immunizations) */
+    .widget ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    .widget ul li {
+      padding: 4px 0;
+    }
+    
+    /* Interpreter Session Widget */
+    .interpreter-button {
+      background-color: #ff7f50;
+      border: none;
+      border-radius: 5px;
+      padding: 15px 30px;
+      font-size: 20px;
+      color: white;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .interpreter-button:hover {
+      background-color: #ff6347;
+    }
+    
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 10% auto;
+      padding: 0;
+      border: 1px solid #888;
+      width: 60%;
+      border-radius: 8px;
+      text-align: center;
+      position: relative;
+    }
+    .modal-header {
+      background-color: white;
+      color: black;
+      padding: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ccc;
+    }
+    .modal-header .modal-logo {
+      height: 30px;
+      margin: 5px;
+    }
+    .modal-header .close {
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    /* Loading Animation */
+    #loadingAnimation {
+      text-align: center;
+      margin: 20px;
+    }
+    #autoLanguageText {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    #connectingText {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .dot {
+      opacity: 0.2;
+      animation: blink 1.4s infinite;
+      font-size: 20px;
+      margin-left: 2px;
+    }
+    @keyframes blink {
+      0% { opacity: 0.2; }
+      20% { opacity: 1; }
+      100% { opacity: 0.2; }
+    }
+    
+    /* Video Call Controls */
+    #videoControls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      background: white;
+      padding: 10px;
+      border-top: 1px solid #ccc;
+    }
+    .control-button {
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 8px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 14px;
+    }
+    .control-button img {
+      width: 20px;
+      height: 20px;
+    }
+    .control-button:hover {
+      background-color: #eee;
+    }
+    
+    /* Interpreter Info in Modal */
+    #interpreterInfo {
+      padding: 10px;
+      font-size: 16px;
+      color: #333;
+      border-top: 1px solid #ccc;
+      background: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <!-- SVG Definitions -->
+  <svg xmlns="http://www.w3.org/2000/svg">
+    <symbol id="icon-dashboard" viewBox="0 0 32 32">
+      <rect x="4" y="4" width="24" height="24" fill="#0078D7"/>
+      <rect x="8" y="8" width="6" height="6" fill="white"/>
+      <rect x="18" y="8" width="6" height="6" fill="white"/>
+      <rect x="8" y="18" width="6" height="6" fill="white"/>
+      <rect x="18" y="18" width="6" height="6" fill="white"/>
+    </symbol>
+    <symbol id="icon-patient" viewBox="0 0 32 32">
+      <circle cx="16" cy="12" r="6" fill="#0078D7"/>
+      <rect x="10" y="20" width="12" height="8" fill="#0078D7"/>
+    </symbol>
+    <symbol id="icon-appointment" viewBox="0 0 32 32">
+      <rect x="6" y="8" width="20" height="18" fill="#0078D7"/>
+      <line x1="6" y1="14" x2="26" y2="14" stroke="white" stroke-width="2"/>
+      <line x1="12" y1="8" x2="12" y2="26" stroke="white" stroke-width="2"/>
+    </symbol>
+    <symbol id="icon-reports" viewBox="0 0 32 32">
+      <rect x="6" y="16" width="4" height="10" fill="#0078D7"/>
+      <rect x="14" y="12" width="4" height="14" fill="#0078D7"/>
+      <rect x="22" y="8" width="4" height="18" fill="#0078D7"/>
+    </symbol>
+    <symbol id="icon-settings" viewBox="0 0 32 32">
+      <circle cx="16" cy="16" r="10" fill="#0078D7"/>
+      <circle cx="16" cy="16" r="4" fill="white"/>
+    </symbol>
+  </svg>
+  
+  <!-- Top Bar -->
+  <div id="topbar">
+    <div class="topbar-left">
+      <span class="title">Equiti EHR</span>
+      <div class="topbar-menu">
+        <div class="menuItem">
+          <svg>
+            <use xlink:href="#icon-dashboard"></use>
+          </svg>
+          <span>Dashboard</span>
+        </div>
+        <div class="menuItem">
+          <svg>
+            <use xlink:href="#icon-patient"></use>
+          </svg>
+          <span>Patients</span>
+        </div>
+        <div class="menuItem">
+          <svg>
+            <use xlink:href="#icon-appointment"></use>
+          </svg>
+          <span>Appointments</span>
+        </div>
+        <div class="menuItem">
+          <svg>
+            <use xlink:href="#icon-reports"></use>
+          </svg>
+          <span>Reports</span>
+        </div>
+        <div class="menuItem">
+          <svg>
+            <use xlink:href="#icon-settings"></use>
+          </svg>
+          <span>Settings</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Sidebar Navigation -->
+  <nav>
+    <ul>
+      <li>
+        <svg>
+          <use xlink:href="#icon-dashboard"></use>
+        </svg>
+        <span>Dashboard</span>
+      </li>
+      <li>
+        <svg>
+          <use xlink:href="#icon-patient"></use>
+        </svg>
+        <span>Patient Records</span>
+      </li>
+      <li>
+        <svg>
+          <use xlink:href="#icon-appointment"></use>
+        </svg>
+        <span>Appointments</span>
+      </li>
+      <li>
+        <svg>
+          <use xlink:href="#icon-reports"></use>
+        </svg>
+        <span>Lab Results</span>
+      </li>
+      <li>
+        <svg>
+          <use xlink:href="#icon-patient"></use>
+        </svg>
+        <span>Prescriptions</span>
+      </li>
+      <li>
+        <svg>
+          <use xlink:href="#icon-settings"></use>
+        </svg>
+        <span>Billing</span>
+      </li>
+      <li>
+        <svg>
+          <use xlink:href="#icon-settings"></use>
+        </svg>
+        <span>Settings</span>
+      </li>
+    </ul>
+  </nav>
+  
+  <!-- Main Content Area as Two Columns -->
+  <div class="content">
+    <!-- Left Column: Multiple Modules -->
+    <div class="left-col">
+      <!-- Patient Information Widget -->
+      <div class="widget">
+        <header>Patient Information</header>
+        <div class="widget-content patient-details">
+          <img src="patient.png" alt="Patient Photo" class="patient-img">
+          <p><strong>Name:</strong> John Doe</p>
+          <p><strong>Date of Birth:</strong> 01/01/1980</p>
+          <p><strong>Gender:</strong> Male</p>
+          <p><strong>Contact:</strong> (555) 123-4567</p>
+          <p><strong>Address:</strong> 123 Main St, Anytown, USA</p>
+          <p><strong>Insurance:</strong> ABC Insurance</p>
+	<p><strong>Language:</strong> Portuguese</p>
+        </div>
+      </div>
+      
+      <!-- Interpreter Session Widget (placed directly under Patient Information) -->
+      <div class="widget">
+        <header>Interpreter Session</header>
+        <div class="widget-content">
+          <p>To initiate an interpreter session, click the button below.</p>
+          <button id="interpreterBtnModule" class="interpreter-button">Get Interpreter</button>
+        </div>
+      </div>
+      
+      <!-- Visit History Widget -->
+      <div class="widget">
+        <header>Visit History</header>
+        <div class="widget-content">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Provider</th>
+                <th>Reason</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2025-02-15</td>
+                <td>Dr. Smith</td>
+                <td>Annual Checkup</td>
+                <td>Normal findings.</td>
+              </tr>
+              <tr>
+                <td>2025-01-10</td>
+                <td>Dr. Adams</td>
+                <td>Flu Symptoms</td>
+                <td>Prescribed rest and medication.</td>
+              </tr>
+              <tr>
+                <td>2025-01-05</td>
+                <td>Dr. Johnson</td>
+                <td>Follow-up</td>
+                <td>Improved symptoms.</td>
+              </tr>
+              <tr>
+                <td>2024-12-15</td>
+                <td>Dr. Lee</td>
+                <td>Consultation</td>
+                <td>Discussed treatment options.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Lab Results Widget -->
+      <div class="widget">
+        <header>Lab Results</header>
+        <div class="widget-content">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Test</th>
+                <th>Result</th>
+                <th>Reference Range</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2025-02-10</td>
+                <td>Blood Sugar</td>
+                <td>95 mg/dL</td>
+                <td>70-99 mg/dL</td>
+              </tr>
+              <tr>
+                <td>2025-02-10</td>
+                <td>Cholesterol</td>
+                <td>180 mg/dL</td>
+                <td>125-200 mg/dL</td>
+              </tr>
+              <tr>
+                <td>2025-01-20</td>
+                <td>CBC</td>
+                <td>Normal</td>
+                <td>WNL</td>
+              </tr>
+              <tr>
+                <td>2024-12-28</td>
+                <td>Lipid Panel</td>
+                <td>Borderline high</td>
+                <td>100-190 mg/dL</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Prescriptions Widget -->
+      <div class="widget">
+        <header>Prescriptions</header>
+        <div class="widget-content">
+          <table>
+            <thead>
+              <tr>
+                <th>Medication</th>
+                <th>Dosage</th>
+                <th>Frequency</th>
+                <th>Prescribing Doctor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Lisinopril</td>
+                <td>10 mg</td>
+                <td>Once Daily</td>
+                <td>Dr. Smith</td>
+              </tr>
+              <tr>
+                <td>Metformin</td>
+                <td>500 mg</td>
+                <td>Twice Daily</td>
+                <td>Dr. Adams</td>
+              </tr>
+              <tr>
+                <td>Atorvastatin</td>
+                <td>20 mg</td>
+                <td>Once Daily</td>
+                <td>Dr. Lee</td>
+              </tr>
+              <tr>
+                <td>Amlodipine</td>
+                <td>5 mg</td>
+                <td>Once Daily</td>
+                <td>Dr. Johnson</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Allergies Widget -->
+      <div class="widget">
+        <header>Allergies</header>
+        <div class="widget-content">
+          <ul>
+            <li><strong>Penicillin:</strong> Rash</li>
+            <li><strong>Peanuts:</strong> Anaphylaxis</li>
+            <li><strong>Latex:</strong> Mild reaction</li>
+            <li><strong>Shellfish:</strong> Hives</li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- Vitals Widget -->
+      <div class="widget">
+        <header>Vitals</header>
+        <div class="widget-content">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>BP</th>
+                <th>HR</th>
+                <th>Temp</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2025-02-15</td>
+                <td>120/80</td>
+                <td>72</td>
+                <td>98.6°F</td>
+              </tr>
+              <tr>
+                <td>2025-01-10</td>
+                <td>118/76</td>
+                <td>70</td>
+                <td>98.4°F</td>
+              </tr>
+              <tr>
+                <td>2025-01-05</td>
+                <td>122/82</td>
+                <td>75</td>
+                <td>98.7°F</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Immunizations Widget -->
+      <div class="widget">
+        <header>Immunizations</header>
+        <div class="widget-content">
+          <ul>
+            <li><strong>Influenza:</strong> 2024-10-01</li>
+            <li><strong>Tetanus:</strong> 2023-05-15</li>
+            <li><strong>COVID-19:</strong> 2022-12-01</li>
+            <li><strong>Hepatitis B:</strong> 2021-08-20</li>
+          </ul>
+        </div>
+      </div>
+      
+    </div>
+    
+    <!-- Right Column: Progress Notes -->
+    <div class="right-col">
+      <div class="widget">
+        <header>Progress Notes</header>
+        <div class="widget-content" id="progressNotes">
+          <!-- Sample progress notes -->
+          <div class="progress-note">
+            <strong>Date:</strong> 2025-02-15 09:00<br>
+            <strong>Author:</strong> Dr. Smith<br>
+            <strong>Note:</strong> Patient is stable and continues current medications. Follow-up in 6 months.
+          </div>
+          <div class="progress-note">
+            <strong>Date:</strong> 2025-02-15 11:30<br>
+            <strong>Author:</strong> Dr. Adams<br>
+            <strong>Note:</strong> Slight improvement in symptoms. Dosage adjusted.
+          </div>
+          <div class="progress-note">
+            <strong>Date:</strong> 2025-01-05 14:20<br>
+            <strong>Author:</strong> Dr. Smith<br>
+            <strong>Note:</strong> Patient reported mild headaches. Advised increased hydration.
+          </div>
+          <div class="progress-note">
+            <strong>Date:</strong> 2024-12-20 10:15<br>
+            <strong>Author:</strong> Dr. Adams<br>
+            <strong>Note:</strong> Routine check-up. No significant changes.
+          </div>
+          <div class="progress-note">
+            <strong>Date:</strong> 2025-03-01 08:30<br>
+            <strong>Author:</strong> Dr. Lee<br>
+            <strong>Note:</strong> Patient reports increased energy levels. Continue current treatment.
+          </div>
+          <div class="progress-note">
+            <strong>Date:</strong> 2025-02-25 10:15<br>
+            <strong>Author:</strong> Dr. Smith<br>
+            <strong>Note:</strong> Follow-up on lab results. Slight improvement in cholesterol levels.
+          </div>
+          <div class="progress-note">
+            <strong>Date:</strong> 2025-02-10 15:45<br>
+            <strong>Author:</strong> Dr. Adams<br>
+            <strong>Note:</strong> Discussed dietary modifications. Patient receptive to changes.
+          </div>
+          <div class="progress-note">
+            <strong>Date:</strong> 2025-01-30 09:00<br>
+            <strong>Author:</strong> Dr. Johnson<br>
+            <strong>Note:</strong> Routine physical exam. All vitals within normal range.
+          </div>
+          <div class="progress-note">
+            <strong>Date:</strong> 2025-01-15 13:00<br>
+            <strong>Author:</strong> Dr. Lee<br>
+            <strong>Note:</strong> Patient reports mild dizziness. Monitoring advised.
+          </div>
+          <div class="progress-note">
+            <strong>Date:</strong> 2025-01-01 08:45<br>
+            <strong>Author:</strong> Dr. Adams<br>
+            <strong>Note:</strong> New patient intake. Baseline labs and vitals recorded.
+          </div>
+        </div>
+        <!-- New Note Entry Section -->
+        <div class="new-note-section">
+          <textarea id="newNoteText" placeholder="Enter new progress note..."></textarea>
+          <button id="saveNoteButton">Add Note</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Interpreter Modal -->
+  <div id="interpreterModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+         <img src="logo.svg" alt="Logo" class="modal-logo">
+         <span class="close" id="modalClose">&times;</span>
+      </div>
+      <div id="loadingAnimation">
+         <p id="autoLanguageText">Portuguese automatically selected from patient's record.</p>
+         <p id="connectingText">
+           Connecting to an interpreter
+           <span class="dot" style="animation-delay: 0s;">.</span>
+           <span class="dot" style="animation-delay: 0.2s;">.</span>
+           <span class="dot" style="animation-delay: 0.4s;">.</span>
+         </p>
+      </div>
+      <video id="interpreterVideo" style="display: none; width: 100%;" autoplay muted>
+         <source src="interpreter.mp4" type="video/mp4">
+         Your browser does not support the video tag.
+      </video>
+      <!-- Video Call Controls -->
+      <div id="videoControls" style="display: none;">
+        <button class="control-button">
+          <img src="video.png" alt="Video Icon">
+          <span>Video</span>
+        </button>
+        <button class="control-button">
+          <img src="mute.png" alt="Mute Icon">
+          <span>Mute</span>
+        </button>
+        <button class="control-button">
+          <img src="volume.png" alt="Volume Icon">
+          <span>Volume</span>
+        </button>
+        <button class="control-button" id="endCallButton">
+          <img src="end.png" alt="End Call Icon">
+          <span>End Call</span>
+        </button>
+      </div>
+      <!-- Interpreter Info Display -->
+      <div id="interpreterInfo">
+        Interpreter: Jose Monteiro (ID: 9417290)
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Show modal on Interpreter Session button click (nested in left column)
+    document.getElementById("interpreterBtnModule").addEventListener("click", function(){
+      var modal = document.getElementById("interpreterModal");
+      modal.style.display = "block";
+      
+      // Reset loading animation and hide video & controls
+      document.getElementById("loadingAnimation").style.display = "block";
+      var video = document.getElementById("interpreterVideo");
+      video.style.display = "none";
+      video.pause();
+      video.currentTime = 0;
+      document.getElementById("videoControls").style.display = "none";
+      
+      // After 4 seconds, hide the loading animation, show the video and controls, and play the video
+      setTimeout(function(){
+          document.getElementById("loadingAnimation").style.display = "none";
+          video.style.display = "block";
+          document.getElementById("videoControls").style.display = "flex";
+          video.play();
+      }, 4000);
+    });
+    
+    // Close modal when user clicks on the close button
+    document.getElementById("modalClose").addEventListener("click", function(){
+      document.getElementById("interpreterModal").style.display = "none";
+    });
+    
+    // When "End Call" button is clicked, update progress notes and close the modal
+    document.getElementById("endCallButton").addEventListener("click", function(){
+      // Close the modal
+      document.getElementById("interpreterModal").style.display = "none";
+      
+      // Create new progress note with the interpreter details and apply pale yellow styling
+      var now = new Date().toLocaleString();
+      var newNote = document.createElement("div");
+      newNote.className = "progress-note new-progress-note";
+      newNote.innerHTML = "<strong>Date:</strong> " + now + "<br>" +
+                          "<strong>Author:</strong> Equiti Integration<br>" +
+                          "<strong>Note:</strong> Interpreter ID: 9417290<br>" +
+                          "Interpreter Name: Jose Monteiro<br>" +
+                          "Language: Portuguese<br>" +
+                          "Call length: 3 minutes 42 seconds<br>" +
+                          "Waiting seconds: 18<br>" +
+                          "Audio / Video: Video<br>" +
+                          "Purpose: Explaining treatment plan";
+      
+      // Append the new note to the progress notes widget
+      document.getElementById("progressNotes").appendChild(newNote);
+    });
+    
+    // New Note Entry: When "Add Note" is clicked, append the user note.
+    document.getElementById("saveNoteButton").addEventListener("click", function(){
+      var noteText = document.getElementById("newNoteText").value.trim();
+      if(noteText !== ""){
+        var now = new Date().toLocaleString();
+        var userNote = document.createElement("div");
+        userNote.className = "progress-note";
+        userNote.innerHTML = "<strong>Date:</strong> " + now + "<br>" +
+                             "<strong>Author:</strong> User Note<br>" +
+                             "<strong>Note:</strong> " + noteText;
+        document.getElementById("progressNotes").appendChild(userNote);
+        document.getElementById("newNoteText").value = "";
+      }
+    });
+    
+    // Optional: Close modal when clicking outside of the modal content
+    window.addEventListener("click", function(event){
+      var modal = document.getElementById("interpreterModal");
+      if(event.target == modal) {
+        modal.style.display = "none";
+      }
+    });
+  </script>
+</body>
+</html>
